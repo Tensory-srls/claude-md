@@ -84,13 +84,14 @@ Then read `index.md` first to locate relevant pages, follow the `[[wikilinks]]` 
 | Index | Use it when |
 |---|---|
 | [`enaqx/awesome-react`](https://github.com/enaqx/awesome-react) | **On-stack.** Choosing a React/Next ecosystem library (state, forms, data, testing) before committing to a dependency. |
+| [`brillout/awesome-react-components`](https://github.com/brillout/awesome-react-components) | **On-stack.** Finding a specific React UI component (tables, forms, modals, charts) before building it from scratch. |
 | [`sindresorhus/awesome-nodejs`](https://github.com/sindresorhus/awesome-nodejs) | **On-stack.** Picking a Node.js package for server-side / Payload / tooling work before adding a dependency. |
 | [`trimstray/the-book-of-secret-knowledge`](https://github.com/trimstray/the-book-of-secret-knowledge) | Off-stack. CLI / ops / networking tool discovery — devops chores, infra troubleshooting. |
 | [`Hack-with-Github/Awesome-Hacking`](https://github.com/Hack-with-Github/Awesome-Hacking) | Off-stack. Security / pentest research — around the §6 security gate (`gitleaks` / `semgrep` / `osv-scanner`), threat modeling, hardening. Not for feature work. |
 
 ```bash
 # clone or update the indexes you need into .cache/ (gitignored)
-for repo in enaqx/awesome-react sindresorhus/awesome-nodejs trimstray/the-book-of-secret-knowledge Hack-with-Github/Awesome-Hacking; do
+for repo in enaqx/awesome-react brillout/awesome-react-components sindresorhus/awesome-nodejs trimstray/the-book-of-secret-knowledge Hack-with-Github/Awesome-Hacking; do
   dir=".cache/$(basename "$repo")"
   git clone "https://github.com/$repo.git" "$dir" 2>/dev/null || git -C "$dir" pull --ff-only
 done
