@@ -79,6 +79,23 @@ git clone https://github.com/Tensory-srls/llm-web-dev-wiki.git .cache/llm-web-de
 
 Then read `index.md` first to locate relevant pages, follow the `[[wikilinks]]` into the specific entity/concept/decision pages, and **prefer the wiki's conventions over generic defaults**. If the wiki and your instinct conflict, the wiki wins; if the wiki is silent, follow stack conventions in §7 and flag the gap. Add `.cache/` to `.gitignore`.
 
+*Curated reference indexes (optional, discovery aids).* Distinct from the wiki above: awesome-lists that help find *which* library or tool exists for a problem — **not documentation**. Once you have a name, get version-specific docs the usual way (context7 → `web_search`); never paste these lists into context. Clone into `.cache/` (gitignored), grep the README, pick a candidate. Reach for one only when its scope matches the task:
+
+| Index | Use it when |
+|---|---|
+| [`enaqx/awesome-react`](https://github.com/enaqx/awesome-react) | **On-stack.** Choosing a React/Next ecosystem library (state, forms, data, testing) before committing to a dependency. |
+| [`sindresorhus/awesome-nodejs`](https://github.com/sindresorhus/awesome-nodejs) | **On-stack.** Picking a Node.js package for server-side / Payload / tooling work before adding a dependency. |
+| [`trimstray/the-book-of-secret-knowledge`](https://github.com/trimstray/the-book-of-secret-knowledge) | Off-stack. CLI / ops / networking tool discovery — devops chores, infra troubleshooting. |
+| [`Hack-with-Github/Awesome-Hacking`](https://github.com/Hack-with-Github/Awesome-Hacking) | Off-stack. Security / pentest research — around the §6 security gate (`gitleaks` / `semgrep` / `osv-scanner`), threat modeling, hardening. Not for feature work. |
+
+```bash
+# clone or update the indexes you need into .cache/ (gitignored)
+for repo in enaqx/awesome-react sindresorhus/awesome-nodejs trimstray/the-book-of-secret-knowledge Hack-with-Github/Awesome-Hacking; do
+  dir=".cache/$(basename "$repo")"
+  git clone "https://github.com/$repo.git" "$dir" 2>/dev/null || git -C "$dir" pull --ff-only
+done
+```
+
 ---
 
 ## 5. Test-Driven Development & quality bar
