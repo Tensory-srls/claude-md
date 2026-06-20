@@ -79,7 +79,7 @@ claude mcp get github-wiki >/dev/null 2>&1 || \
 
 `X-MCP-Readonly`/`X-MCP-Toolsets` cap the server to read-only `repos`+`context` tools, so it can only read repositories. If `gh` is not authenticated, fall back to a one-off `git clone` of the wiki into `.cache/` (gitignored) and consult it locally.
 
-**Usage.** Through the `github-wiki` MCP: read `README.md` (and any `index`) first with `get_file_contents` on `Tensory-srls/llm-web-dev-wiki` (default branch `main`), follow the `[[wikilinks]]` into the specific entity/concept/decision pages, and use `search_code` to locate relevant ones. **Prefer the wiki's conventions over generic defaults**: if the wiki and your instinct conflict, the wiki wins; if the wiki is silent, follow stack conventions in §7 and flag the gap.
+**Usage.** Through the `github-wiki` MCP: start at the categorized table of contents **`myWiki/wiki/index.md`** with `get_file_contents` on `Tensory-srls/llm-web-dev-wiki` (default branch `main`; the ~153 pages live under `myWiki/wiki/`), follow the `[[wikilinks]]` into the specific entity/concept/decision pages, and use `search_code` to locate relevant ones. **Prefer the wiki's conventions over generic defaults**: if the wiki and your instinct conflict, the wiki wins; if the wiki is silent, follow stack conventions in §7 and flag the gap.
 
 *Curated reference indexes (optional, discovery aids).* Distinct from the wiki above: awesome-lists that help find *which* library or tool exists for a problem — **not documentation**. Once you have a name, get version-specific docs the usual way (context7 → `web_search`); never paste these lists into context. Clone into `.cache/` (gitignored), grep the README, pick a candidate. Reach for one only when its scope matches the task:
 
