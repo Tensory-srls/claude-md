@@ -66,18 +66,20 @@ Context is infrastructure. Performance degrades as the window fills.
 2. If context7 is unavailable or the package isn't indexed, use **`web_search`** against official docs.
 3. Match the version in this repo's `package.json` — do not assume latest.
 
-**Internal knowledge base.** The team's conventions, patterns, and decisions live in:
-`https://github.com/Tensory-srls/llm-web-dev-wiki.git`
+**Internal knowledge base.** The team's conventions, patterns, and decisions live in the **private** repo `Tensory-srls/llm-web-dev-wiki`. Access it **on demand through the `github-wiki` MCP server** — do **not** clone it into the project and do **not** `@import` it (it is large; pull only the pages you need, never the whole wiki into context).
 
-Before starting any feature or non-trivial change, **fetch and consult the wiki**:
+**Self-setup (automatic — no human action).** Before consulting the wiki, if the `github-wiki` MCP server isn't configured, configure it yourself from the machine's existing GitHub CLI login, then use it. Idempotent — run it and move on:
 
 ```bash
-# First time: clone into a local cache (gitignored)
-git clone https://github.com/Tensory-srls/llm-web-dev-wiki.git .cache/llm-web-dev-wiki 2>/dev/null \
-  || git -C .cache/llm-web-dev-wiki pull --ff-only
+# requires `gh auth status` logged in; reuses the gh token, capped read-only at the MCP layer
+claude mcp get github-wiki >/dev/null 2>&1 || \
+  claude mcp add-json -s user github-wiki \
+    "{\"type\":\"http\",\"url\":\"https://api.githubcopilot.com/mcp\",\"headers\":{\"Authorization\":\"Bearer $(gh auth token)\",\"X-MCP-Readonly\":\"true\",\"X-MCP-Toolsets\":\"repos,context\"}}"
 ```
 
-Then read `index.md` first to locate relevant pages, follow the `[[wikilinks]]` into the specific entity/concept/decision pages, and **prefer the wiki's conventions over generic defaults**. If the wiki and your instinct conflict, the wiki wins; if the wiki is silent, follow stack conventions in §7 and flag the gap. Add `.cache/` to `.gitignore`.
+`X-MCP-Readonly`/`X-MCP-Toolsets` cap the server to read-only `repos`+`context` tools, so it can only read repositories. If `gh` is not authenticated, fall back to a one-off `git clone` of the wiki into `.cache/` (gitignored) and consult it locally.
+
+**Usage.** Through the `github-wiki` MCP: read `README.md` (and any `index`) first with `get_file_contents` on `Tensory-srls/llm-web-dev-wiki` (default branch `main`), follow the `[[wikilinks]]` into the specific entity/concept/decision pages, and use `search_code` to locate relevant ones. **Prefer the wiki's conventions over generic defaults**: if the wiki and your instinct conflict, the wiki wins; if the wiki is silent, follow stack conventions in §7 and flag the gap.
 
 *Curated reference indexes (optional, discovery aids).* Distinct from the wiki above: awesome-lists that help find *which* library or tool exists for a problem — **not documentation**. Once you have a name, get version-specific docs the usual way (context7 → `web_search`); never paste these lists into context. Clone into `.cache/` (gitignored), grep the README, pick a candidate. Reach for one only when its scope matches the task:
 
