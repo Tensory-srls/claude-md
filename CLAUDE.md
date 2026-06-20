@@ -29,6 +29,26 @@ These skills are mandatory and load automatically when their trigger matches. Do
 
 ---
 
+## 1.5 Required local setup (provision if missing)
+
+**YOU MUST have both of these available in any repo that loads this ruleset.** They are mandatory, not optional. If one is missing, provision it yourself — idempotent, no human needed — reusing the machine's `gh` login. All of this requires `gh auth status` to be logged in; if it is not, tell the user to run `gh auth login` and do **not** silently skip the gate or the wiki.
+
+1. **`prod-gates` plugin** — the production quality gate ([`Tensory-srls/prod-gates`](https://github.com/Tensory-srls/prod-gates)). Run `/prod-gates:prod-gate <category>` as the gate before any production push (see §6). Provision:
+   ```bash
+   claude plugin marketplace list 2>/dev/null | grep -q tensory-prod-gates || claude plugin marketplace add Tensory-srls/prod-gates
+   claude plugin list 2>/dev/null | grep -q prod-gates || claude plugin install prod-gates@tensory-prod-gates
+   ```
+
+2. **`github-wiki` MCP** — read-only access to the internal wiki (full rationale and usage in §4). Provision:
+   ```bash
+   claude mcp get github-wiki >/dev/null 2>&1 || \
+     claude mcp add-json -s user github-wiki "{\"type\":\"http\",\"url\":\"https://api.githubcopilot.com/mcp\",\"headers\":{\"Authorization\":\"Bearer $(gh auth token)\",\"X-MCP-Readonly\":\"true\",\"X-MCP-Toolsets\":\"repos,context\"}}"
+   ```
+
+A plugin install or MCP change may need `/reload-plugins` or a session restart to expose its tools. Verify with `claude plugin list` and `claude mcp list`.
+
+---
+
 ## 2. The mandatory workflow: research → plan → execute → review → ship
 
 Never jump straight to code. The research and planning steps are where quality is decided.
