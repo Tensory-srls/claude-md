@@ -22,6 +22,7 @@ These skills are mandatory and load automatically when their trigger matches. Do
 
 - **caveman** → active for **every response**. Telegraphic output: fragments, no filler, no "Great question!", no restating the prompt, no sign-offs. Cuts ~65-75% output tokens. *Scope:* compresses **prose output only** — never compresses reasoning/thinking, code, plans shown for approval, spec text, or debugging hypotheses surfaced to the user. Brain big, mouth small.
 - **superpowers** → active for **every feature**. Drives the structured methodology: brainstorming → spec → plan → subagent-driven execution with built-in review. Enforces true red/green/refactor TDD, YAGNI, DRY.
+- **ponytail** → active for **every feature, alongside `superpowers`**. "Lazy senior dev" discipline: before writing code, walk the decision ladder (does it need to exist? already in the codebase? stdlib? native platform feature?) and stop at the first rung that holds — minimal, reuse-first code. `/ponytail [lite|full|ultra|off]` sets intensity (default `full`); `/ponytail-review` flags over-engineering in a diff, `/ponytail-audit` scans the repo. Reinforces YAGNI/DRY — never a license to skip a failing test, TDD, or the §6 gate.
 - **systematic-debugging** (part of superpowers) → active for **every debug / fix / "why is this broken"** request. 4-phase root-cause process: reproduce → isolate root cause → validate assumption → fix + confirm. After **3 failed fix attempts**, stop patching and trigger architectural review.
 - **Documentation lookup** → active for **every request touching a library, framework, or API**. Use the **context7 MCP** for version-specific live docs; if context7 is unavailable, fall back to **`web_search`**. Never answer framework/API questions from memory — versions drift. See §4.
 
@@ -31,7 +32,7 @@ These skills are mandatory and load automatically when their trigger matches. Do
 
 ## 1.5 Required local setup (provision if missing)
 
-**YOU MUST have both of these available in any repo that loads this ruleset.** They are mandatory, not optional. If one is missing, provision it yourself — idempotent, no human needed — reusing the machine's `gh` login. All of this requires `gh auth status` to be logged in; if it is not, tell the user to run `gh auth login` and do **not** silently skip the gate or the wiki.
+**YOU MUST have all three of these available in any repo that loads this ruleset.** They are mandatory, not optional. If one is missing, provision it yourself — idempotent, no human needed — reusing the machine's `gh` login. All of this requires `gh auth status` to be logged in; if it is not, tell the user to run `gh auth login` and do **not** silently skip the gate or the wiki.
 
 1. **`prod-gates` plugin** — the production quality gate ([`Tensory-srls/prod-gates`](https://github.com/Tensory-srls/prod-gates)). Run `/prod-gates:prod-gate <category>` as the gate before any production push (see §6). Provision:
    ```bash
@@ -43,6 +44,12 @@ These skills are mandatory and load automatically when their trigger matches. Do
    ```bash
    claude mcp get github-wiki >/dev/null 2>&1 || \
      claude mcp add-json -s user github-wiki "{\"type\":\"http\",\"url\":\"https://api.githubcopilot.com/mcp\",\"headers\":{\"Authorization\":\"Bearer $(gh auth token)\",\"X-MCP-Readonly\":\"true\",\"X-MCP-Toolsets\":\"repos,context\"}}"
+   ```
+
+3. **`ponytail` plugin** — minimal-code "lazy senior dev" discipline ([`DietrichGebert/ponytail`](https://github.com/DietrichGebert/ponytail)). Loads alongside `superpowers` on every feature (see §1). Provision:
+   ```bash
+   claude plugin marketplace list 2>/dev/null | grep -qi ponytail || claude plugin marketplace add DietrichGebert/ponytail
+   claude plugin list 2>/dev/null | grep -qi ponytail || claude plugin install ponytail@ponytail
    ```
 
 A plugin install or MCP change may need `/reload-plugins` or a session restart to expose its tools. Verify with `claude plugin list` and `claude mcp list`.
