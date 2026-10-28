@@ -32,27 +32,17 @@ These skills are mandatory and load automatically when their trigger matches. Do
 
 ## 1.5 Required local setup (provision if missing)
 
-**YOU MUST have all three of these available in any repo that loads this ruleset.** They are mandatory, not optional. If one is missing, provision it yourself — idempotent, no human needed — reusing the machine's `gh` login. All of this requires `gh auth status` to be logged in; if it is not, tell the user to run `gh auth login` and do **not** silently skip the gate or the wiki.
+**YOU MUST have this available in any repo that loads this ruleset.** Provision it yourself — idempotent, no human needed.
 
-1. **`prod-gates` plugin** — the production quality gate ([`Tensory-srls/prod-gates`](https://github.com/Tensory-srls/prod-gates)). Run `/prod-gates:prod-gate <category>` as the gate before any production push (see §6). Provision:
-   ```bash
-   claude plugin marketplace list 2>/dev/null | grep -q tensory-prod-gates || claude plugin marketplace add Tensory-srls/prod-gates
-   claude plugin list 2>/dev/null | grep -q prod-gates || claude plugin install prod-gates@tensory-prod-gates
-   ```
+**`ponytail` plugin** — minimal-code "lazy senior dev" discipline ([`DietrichGebert/ponytail`](https://github.com/DietrichGebert/ponytail)). Loads alongside `superpowers` on every feature (see §1). Provision:
+```bash
+claude plugin marketplace list 2>/dev/null | grep -qi ponytail || claude plugin marketplace add DietrichGebert/ponytail
+claude plugin list 2>/dev/null | grep -qi ponytail || claude plugin install ponytail@ponytail
+```
 
-2. **`github-wiki` MCP** — read-only access to the internal wiki (full rationale and usage in §4). Provision:
-   ```bash
-   claude mcp get github-wiki >/dev/null 2>&1 || \
-     claude mcp add-json -s user github-wiki "{\"type\":\"http\",\"url\":\"https://api.githubcopilot.com/mcp\",\"headers\":{\"Authorization\":\"Bearer $(gh auth token)\",\"X-MCP-Readonly\":\"true\",\"X-MCP-Toolsets\":\"repos,context\"}}"
-   ```
+A plugin install may need `/reload-plugins` or a session restart to expose its tools. Verify with `claude plugin list`.
 
-3. **`ponytail` plugin** — minimal-code "lazy senior dev" discipline ([`DietrichGebert/ponytail`](https://github.com/DietrichGebert/ponytail)). Loads alongside `superpowers` on every feature (see §1). Provision:
-   ```bash
-   claude plugin marketplace list 2>/dev/null | grep -qi ponytail || claude plugin marketplace add DietrichGebert/ponytail
-   claude plugin list 2>/dev/null | grep -qi ponytail || claude plugin install ponytail@ponytail
-   ```
-
-A plugin install or MCP change may need `/reload-plugins` or a session restart to expose its tools. Verify with `claude plugin list` and `claude mcp list`.
+**Not part of this setup:** the `prod-gates` plugin and the `github-wiki` MCP are **not active**. Do not install, configure, or depend on them. The wiki repo is read on demand via the `gh` CLI (§4).
 
 ---
 
@@ -60,7 +50,7 @@ A plugin install or MCP change may need `/reload-plugins` or a session restart t
 
 Never jump straight to code. The research and planning steps are where quality is decided.
 
-**1. Research (plan mode).** Read the relevant files and the internal wiki (§4). Do not modify anything. For non-trivial work, **interview the user**: ask about technical details, UX, edge cases, trade-offs until the spec is self-sufficient. A good spec names the files and interfaces involved, states what is out of scope, and ends with an end-to-end verification step.
+**1. Research (plan mode).** Read the relevant files (and, when useful, the internal wiki §4). Do not modify anything. For non-trivial work, **interview the user**: ask about technical details, UX, edge cases, trade-offs until the spec is self-sufficient. A good spec names the files and interfaces involved, states what is out of scope, and ends with an end-to-end verification step.
 
 **2. Plan.** Produce a written plan the user can read and edit. Short enough to digest in chunks. For features, this is the `superpowers` brainstorming + writing-plans flow. Wait for explicit "go".
 
@@ -93,20 +83,15 @@ Context is infrastructure. Performance degrades as the window fills.
 2. If context7 is unavailable or the package isn't indexed, use **`web_search`** against official docs.
 3. Match the version in this repo's `package.json` — do not assume latest.
 
-**Internal knowledge base.** The team's conventions, patterns, and decisions live in the **private** repo `Tensory-srls/llm-web-dev-wiki`. Access it **on demand through the `github-wiki` MCP server** — do **not** clone it into the project and do **not** `@import` it (it is large; pull only the pages you need, never the whole wiki into context).
+**Internal knowledge base (optional).** The team's conventions, patterns, and decisions live in the **private** repo `Tensory-srls/llm-web-dev-wiki`. There is no MCP server for it — access it **on demand with the `gh` CLI**. Do **not** clone it into the project and do **not** `@import` it: it is large, so pull only the pages you need, never the whole wiki into context. Skip it for trivial or mechanical work.
 
-**Self-setup (automatic — no human action).** Before consulting the wiki, if the `github-wiki` MCP server isn't configured, configure it yourself from the machine's existing GitHub CLI login, then use it. Idempotent — run it and move on:
+**Usage (via `gh`).** Start at the categorized table of contents **`myWiki/wiki/index.md`** (default branch `main`; the ~153 pages live under `myWiki/wiki/`), follow the `[[wikilinks]]` into the specific entity/concept/decision pages, and locate pages with `gh search code`. Read one page with:
 
 ```bash
-# requires `gh auth status` logged in; reuses the gh token, capped read-only at the MCP layer
-claude mcp get github-wiki >/dev/null 2>&1 || \
-  claude mcp add-json -s user github-wiki \
-    "{\"type\":\"http\",\"url\":\"https://api.githubcopilot.com/mcp\",\"headers\":{\"Authorization\":\"Bearer $(gh auth token)\",\"X-MCP-Readonly\":\"true\",\"X-MCP-Toolsets\":\"repos,context\"}}"
+gh api repos/Tensory-srls/llm-web-dev-wiki/contents/myWiki/wiki/index.md --jq .content | base64 -d
 ```
 
-`X-MCP-Readonly`/`X-MCP-Toolsets` cap the server to read-only `repos`+`context` tools, so it can only read repositories. If `gh` is not authenticated, fall back to a one-off `git clone` of the wiki into `.cache/` (gitignored) and consult it locally.
-
-**Usage.** Through the `github-wiki` MCP: start at the categorized table of contents **`myWiki/wiki/index.md`** with `get_file_contents` on `Tensory-srls/llm-web-dev-wiki` (default branch `main`; the ~153 pages live under `myWiki/wiki/`), follow the `[[wikilinks]]` into the specific entity/concept/decision pages, and use `search_code` to locate relevant ones. **Prefer the wiki's conventions over generic defaults**: if the wiki and your instinct conflict, the wiki wins; if the wiki is silent, follow stack conventions in §7 and flag the gap.
+Requires `gh auth status` logged in; if it is not, tell the user and fall back to a one-off `git clone` of the wiki into `.cache/` (gitignored). **Prefer the wiki's conventions over generic defaults** when it covers the topic: if the wiki and your instinct conflict, the wiki wins; if the wiki is silent, follow stack conventions in §7 and flag the gap.
 
 *Curated reference indexes (optional, discovery aids).* Distinct from the wiki above: awesome-lists that help find *which* library or tool exists for a problem — **not documentation**. Once you have a name, get version-specific docs the usual way (context7 → `web_search`); never paste these lists into context. Clone into `.cache/` (gitignored), grep the README, pick a candidate. Reach for one only when its scope matches the task:
 
