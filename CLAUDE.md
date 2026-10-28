@@ -25,6 +25,7 @@ These skills are mandatory and load automatically when their trigger matches. Do
 - **ponytail** → active for **every feature, alongside `superpowers`**. "Lazy senior dev" discipline: before writing code, walk the decision ladder (does it need to exist? already in the codebase? stdlib? native platform feature?) and stop at the first rung that holds — minimal, reuse-first code. `/ponytail [lite|full|ultra|off]` sets intensity (default `full`); `/ponytail-review` flags over-engineering in a diff, `/ponytail-audit` scans the repo. Reinforces YAGNI/DRY — never a license to skip a failing test, TDD, or the §6 gate.
 - **systematic-debugging** (part of superpowers) → active for **every debug / fix / "why is this broken"** request. 4-phase root-cause process: reproduce → isolate root cause → validate assumption → fix + confirm. After **3 failed fix attempts**, stop patching and trigger architectural review.
 - **Documentation lookup** → active for **every request touching a library, framework, or API**. Use the **context7 MCP** for version-specific live docs; if context7 is unavailable, fall back to **`web_search`**. Never answer framework/API questions from memory — versions drift. See §4.
+- **ECC skills** → active for **every request**. **YOU MUST** search the ECC skill package for skills that match the task and load every match before planning or coding (§1.6). No exceptions, no "I know what ECC has" from memory.
 
 > If a request is mechanical (rename, mechanical refactor, batch fix), caveman + the relevant skill is enough. If it is design/architecture/learning, keep reasoning visible inside thinking; caveman still compresses the final prose.
 
@@ -43,6 +44,43 @@ claude plugin list 2>/dev/null | grep -qi ponytail || claude plugin install pony
 A plugin install may need `/reload-plugins` or a session restart to expose its tools. Verify with `claude plugin list`.
 
 **Not part of this setup:** the `prod-gates` plugin and the `github-wiki` MCP are **not active**. Do not install, configure, or depend on them. The wiki repo is read on demand via the `gh` CLI (§4).
+
+---
+
+## 1.6 ECC skill discovery (MANDATORY — every request)
+
+ECC ([`affaan-m/ECC`](https://github.com/affaan-m/ECC)) is a large skill package. **You MUST, for every request, search it for skills relevant to the task and load the ones that fit — before planning, coding, or answering.** Skipping the search is a rule violation, not an optimization. Never answer from memory about what ECC contains.
+
+**1. Search.** Read the live catalog, not assumptions. In the ECC repo (`$ECC_ROOT`, or the installed skills dir):
+
+```bash
+node scripts/ci/catalog.js --json                       # ids, descriptions, profiles
+find skills -maxdepth 2 -name SKILL.md | sort           # every skill on disk
+grep -m1 '^description:' skills/*/SKILL.md              # scan descriptions fast
+```
+
+Match against the task: language, framework, domain, phase (design, test, review, security, deploy, docs...).
+
+**2. Load.** Read each matching `SKILL.md` **fully** and follow it. Once a skill matches, using it is not optional. If nothing matches, state that in one line and continue with the always-on skills (§1).
+
+**3. Install if missing.** If ECC is not installed in the current harness, install it from GitHub first — idempotent, then re-run the search. Verify the install before claiming success.
+
+```bash
+# Claude Code
+claude plugin list --json | grep -q ecc || {
+  claude plugin marketplace add affaan-m/ECC && claude plugin install ecc@ecc; }
+# then /reload-plugins or restart the session
+
+# Codex
+codex plugin marketplace list --json | grep -q ecc || \
+  codex plugin marketplace add affaan-m/ECC && codex plugin add ecc@ecc --json
+
+# any harness via the CLI installer (opencode / kimi / others)
+npx --yes --package ecc-universal ecc install --profile core --target <harness>
+npx --yes --package ecc-universal ecc doctor --target <harness>
+```
+
+Keep this file high-signal: reference ECC, do not restate its catalog here.
 
 ---
 

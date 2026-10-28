@@ -16,6 +16,7 @@ Stack di riferimento: **Next.js (App Router) · React · TypeScript · Payload C
   - regole non negoziabili (verification gate prima di ogni push, mai committare segreti, ecc.);
   - il workflow obbligatorio: research → plan → execute → review → ship;
   - disciplina su contesto e prompt-engineering;
+  - ricerca **obbligatoria** delle skill ECC adatte al task (con install da GitHub se assenti);
   - uso della documentazione (context7 MCP + wiki interna);
   - TDD e quality bar;
   - il gate di verifica CI;
